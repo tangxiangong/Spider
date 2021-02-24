@@ -1,3 +1,2 @@
 print("test")
 
-import requests
