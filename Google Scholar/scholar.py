@@ -6,11 +6,12 @@ import shutil
 import requests
 
 
-def _set_root(root : str) -> str :
+def _set_root(root: str) -> str:
     if root is None:
         return os.getcwd()
     else:
         return root
+
 
 def _mkdir(root: str):
     if os.path.exists(root):
@@ -86,12 +87,16 @@ class Scholar(object):
         self._save_html_file()
         for _ in range(1, self._pages):
             self._next_page()
-        print(f"The html files are saved in the directory {self._html_root}.")
 
     def search(self):
         self._save_html_files()
 
+    def get_html_root(self):
+        return self._html_root
 
-if __name__ == "__main__":
-    s = Scholar("random walk", pages=2)
-    s.search()
+
+# if __name__ == "__main__":
+    # print("What do you want to search?")
+    # w = input()
+    # s = Scholar(w, pages=2)
+    # s.search()
