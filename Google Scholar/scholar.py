@@ -2,8 +2,12 @@
 # -*- encoding: utf-8 -*-
 # @Time : 2021/2/24 15:47
 import os
+# import re
+import time
 import shutil
 import requests
+import numpy as np
+from bs4 import BeautifulSoup
 
 
 def _set_root(root: str) -> str:
@@ -23,7 +27,8 @@ class Scholar(object):
     _url = r'https://scholar.google.com/scholar?hl=zh-CN&q='
     _headers = {
         "Host": "scholar.google.com",
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15"
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) "
+        + "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15"
     }
 
     def __init__(self, query: str, pages: int = 1, root: str = None):
@@ -44,6 +49,8 @@ class Scholar(object):
         _mkdir(self._root)
         self._html_root = os.path.join(self._root, "html")
         _mkdir(self._html_root)
+        self._html = []
+        self._papers_url_list = np.zeros((self._pages, 10), dtype=str)
 
     def _test_connection(self) -> bool:
         response = requests.get(Scholar._url, headers=Scholar._headers, params=self._params)
@@ -60,19 +67,20 @@ class Scholar(object):
             print("ERROR!")
             return False
 
-    def _search_one_page(self) -> str:
+    def _search_one_page(self):
         response = requests.get(Scholar._url, headers=Scholar._headers, params=self._params)
         assert response.status_code == 200
-        return response.text
+        self._html.append(response.text)
 
     def _save_html_file(self):
-        text = self._search_one_page()
+        self._search_one_page()
         path = os.path.join(self._html_root, f"{self._query}_page_{self._current_page}.html")
         with open(path, 'w', encoding='utf-8') as f:
-            f.write(text)
+            f.write(self._html[-1])
 
     def _update_params(self):
         self._params = {
+            'as_vis': '1',
             'q': f'"{self._query}"',
             "start": str((self._current_page - 1) * 10),
             "as_sdt": "0,5"
@@ -81,6 +89,7 @@ class Scholar(object):
     def _next_page(self):
         self._current_page += 1
         self._update_params()
+        time.sleep(2)
         self._save_html_file()
 
     def _save_html_files(self):
@@ -94,9 +103,17 @@ class Scholar(object):
     def get_html_root(self):
         return self._html_root
 
+    # def _get_papers_url_list(self):
+    #     pattern = re.compile(r'<div class="gs_ri">.*?<a .*?href="(.*?)"')
+    #     for i in range(0, self._pages):
+    #         self._papers_url_list[i] = pattern.findall(self._html[i], re.S)
+    #
+    # def show_url(self):
+    #     self._get_papers_url_list()
+    #     print(self._papers_url_list)
 
-# if __name__ == "__main__":
-    # print("What do you want to search?")
-    # w = input()
-    # s = Scholar(w, pages=2)
-    # s.search()
+
+if __name__ == "__main__":
+    s = Scholar("L1 method")
+    s.search()
+    # s.show_url()
