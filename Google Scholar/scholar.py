@@ -6,7 +6,6 @@ import os
 import time
 import shutil
 import requests
-import numpy as np
 from bs4 import BeautifulSoup
 
 
@@ -21,6 +20,18 @@ def _mkdir(root: str):
     if os.path.exists(root):
         shutil.rmtree(root)
     os.mkdir(root)
+
+
+def _one_page_urls_and_titles(html):
+    soup = BeautifulSoup(html, 'lxml')
+    temp = soup.select('.gs_rt a')
+    assert len(temp) == 10
+    url = ['' for _ in range(10)]
+    title = ['' for _ in range(10)]
+    for index, tp in enumerate(temp):
+        url[index] = tp['href']
+        title[index] = tp.text
+    return url, title
 
 
 class Scholar(object):
@@ -50,7 +61,10 @@ class Scholar(object):
         self._html_root = os.path.join(self._root, "html")
         _mkdir(self._html_root)
         self._html = []
-        self._papers_url_list = np.zeros((self._pages, 10), dtype=str)
+        self._save_html_files()
+        self._papers_url_list = [['' for _ in range(10)] for __ in range(self._pages)]
+        self._papers_title_list = [['' for _ in range(10)] for __ in range(self._pages)]
+        self._get_papers_url_and_title_list()
 
     def _test_connection(self) -> bool:
         response = requests.get(Scholar._url, headers=Scholar._headers, params=self._params)
@@ -97,23 +111,29 @@ class Scholar(object):
         for _ in range(1, self._pages):
             self._next_page()
 
-    def search(self):
-        self._save_html_files()
+    # def search(self):
+        # self._save_html_files()
 
-    def get_html_root(self):
-        return self._html_root
+    # def get_html_root(self):
+    #     return self._html_root
 
-    # def _get_papers_url_list(self):
-    #     pattern = re.compile(r'<div class="gs_ri">.*?<a .*?href="(.*?)"')
-    #     for i in range(0, self._pages):
-    #         self._papers_url_list[i] = pattern.findall(self._html[i], re.S)
-    #
-    # def show_url(self):
-    #     self._get_papers_url_list()
-    #     print(self._papers_url_list)
+    def _get_papers_url_and_title_list(self):
+        for k in range(self._pages):
+            self._papers_url_list[k], self._papers_title_list[k] = _one_page_urls_and_titles(self._html[k])
+
+    def get_url(self):
+        return self._papers_url_list
+
+    def get_title(self):
+        return self._papers_title_list
 
 
 if __name__ == "__main__":
-    s = Scholar("L1 method")
-    s.search()
-    # s.show_url()
+    p = 2
+    s = Scholar("L1 method", pages=p)
+    u = s.get_url()
+    t = s.get_title()
+    for i in range(p):
+        print(f"第{i}页:")
+        for j in range(10):
+            print(f"title: {t[i][j]}, url: {u[i][j]}")
