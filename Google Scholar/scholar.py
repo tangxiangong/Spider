@@ -2,7 +2,6 @@
 # -*- encoding: utf-8 -*-
 # @Time : 2021/2/24 15:47
 import os
-# import re
 import time
 import shutil
 import requests
