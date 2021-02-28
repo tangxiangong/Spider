@@ -132,11 +132,11 @@ if __name__ == "__main__":
     s = Scholar("L1 method", pages=p)
     u = s.get_url()
     t = s.get_title()
-    with open('data.txt', 'w', encoding='utf-8') as f:
+    with open('data.txt', 'w', encoding='utf-8') as fp:
         for i in range(p):
-            f.writelines(f"第{i+1}页:\n")
+            fp.writelines(f"第{i+1}页:\n")
             for j in range(10):
                 if j < 9:
-                    f.writelines(f"{j+1}. title: {t[i][j]}\n   url: {u[i][j]}\n\n")
+                    fp.writelines(f"{j+1}. title: {t[i][j]}\n   url: {u[i][j]}\n\n")
                 else:
-                    f.writelines(f"{j+1}. title: {t[i][j]}\n    url: {u[i][j]}\n\n")
+                    fp.writelines(f"{j+1}. title: {t[i][j]}\n    url: {u[i][j]}\n\n")
